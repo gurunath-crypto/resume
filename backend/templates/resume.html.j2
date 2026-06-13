@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  /* Mirrors the reference LaTeX: navy headers, steel-blue accents, dense layout */
+  :root {
+    --header: #191970;     /* midnight blue */
+    --accent: #4682b4;     /* steel blue */
+    --text:   #212121;
+  }
+  @page { size: A4; margin: 10mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Linux Libertine", "Libertinus Serif", Georgia, "Times New Roman", serif;
+    font-size: 9pt; line-height: 1.28; color: var(--text); margin: 0;
+  }
+  .name { font-size: 23pt; font-weight: 700; color: var(--header); letter-spacing: .5px; text-align: center; }
+  .role { font-size: 11pt; color: var(--accent); text-align: center; margin-top: 2px; }
+  .contact { text-align: center; font-size: 8.5pt; margin-top: 5px; }
+  .contact a { color: var(--accent); text-decoration: none; }
+  .contact span { white-space: nowrap; }
+  .contact .sep { color: #999; margin: 0 6px; }
+  .band {
+    margin: 7px auto 2px; padding: 5px 8px; text-align: center;
+    background: rgba(70,130,180,.10); color: var(--header); font-weight: 700; font-size: 8.7pt;
+    border-radius: 3px;
+  }
+  .band b { color: var(--header); }
+  .band .sep { color: var(--accent); margin: 0 5px; font-weight: 400; }
+
+  h2.section {
+    text-transform: uppercase; color: var(--header); font-size: 11pt; font-weight: 700;
+    border-bottom: 1.5px solid var(--accent); margin: 11px 0 5px; padding-bottom: 1px; letter-spacing: .4px;
+  }
+  .summary { text-align: justify; }
+
+  .comp-grid { column-count: 2; column-gap: 16px; }
+  .comp { break-inside: avoid; margin-bottom: 3px; }
+  .comp .cat { color: var(--accent); font-weight: 700; }
+
+  .xp-head { display: flex; justify-content: space-between; font-weight: 700; font-size: 10pt; margin-top: 4px; }
+  .xp-sub  { display: flex; justify-content: space-between; font-style: italic; font-size: 8.8pt; }
+  .xp-ctx  { font-style: italic; font-size: 8.6pt; color: #444; margin-bottom: 2px; }
+  .grp-head { color: var(--accent); font-weight: 700; margin-top: 4px; }
+  ul { margin: 1px 0 3px; padding-left: 14px; }
+  li { margin-bottom: 1.5px; text-align: justify; }
+  li::marker { color: var(--accent); }
+
+  .edu-line { display: flex; justify-content: space-between; }
+  .edu-line .deg { font-weight: 700; }
+  .muted { color: #444; font-style: italic; }
+  .footer { text-align: center; color: var(--accent); font-style: italic; font-size: 8pt; margin-top: 10px; border-top: .5px solid var(--accent); padding-top: 3px; }
+</style>
+</head>
+<body>
+
+  <div class="name">{{ r.name|upper }}</div>
+  {% if r.title %}<div class="role">{{ r.title }}</div>{% endif %}
+
+  <div class="contact">
+    {% set parts = [] %}
+    {% if r.email %}<span><a href="mailto:{{ r.email }}">{{ r.email }}</a></span>{% endif %}
+    {% if r.phone %}<span class="sep">|</span><span>{{ r.phone }}</span>{% endif %}
+    {% if r.location %}<span class="sep">|</span><span>{{ r.location }}</span>{% endif %}
+    {% if r.linkedin %}<span class="sep">|</span><span><a href="{{ r.linkedin }}">LinkedIn</a></span>{% endif %}
+    {% if r.github %}<span class="sep">|</span><span><a href="{{ r.github }}">GitHub</a></span>{% endif %}
+  </div>
+
+  {% if r.impact_metrics %}
+  <div class="band">
+    {% for m in r.impact_metrics %}<b>{{ m }}</b>{% if not loop.last %}<span class="sep">|</span>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if r.summary %}
+  <h2 class="section">Executive Summary</h2>
+  <div class="summary">{{ r.summary }}</div>
+  {% endif %}
+
+  {% if r.competencies %}
+  <h2 class="section">Core Technical Competencies</h2>
+  <div class="comp-grid">
+    {% for c in r.competencies %}
+    <div class="comp"><span class="cat">{{ c.category }}:</span> {{ c.skills }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if r.experience %}
+  <h2 class="section">Professional Experience</h2>
+  {% for x in r.experience %}
+    <div class="xp-head"><span>{{ x.role }}</span><span>{{ x.dates }}</span></div>
+    <div class="xp-sub">
+      <span>{{ x.company }}{% if x.client %} | Client: {{ x.client }}{% endif %}</span>
+      <span>{{ x.location }}</span>
+    </div>
+    {% if x.context %}<div class="xp-ctx">{{ x.context }}</div>{% endif %}
+    {% for g in x.groups %}
+      {% if g.subhead %}<div class="grp-head">{{ g.subhead }}</div>{% endif %}
+      <ul>{% for b in g.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+    {% endfor %}
+  {% endfor %}
+  {% endif %}
+
+  {% if r.projects %}
+  <h2 class="section">Key Projects</h2>
+  {% for p in r.projects %}
+    {% if p.subhead %}<div class="grp-head">{{ p.subhead }}</div>{% endif %}
+    <ul>{% for b in p.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+  {% endfor %}
+  {% endif %}
+
+  {% if r.education %}
+  <h2 class="section">Education</h2>
+  {% for e in r.education %}
+    <div class="edu-line"><span class="deg">{{ e.degree }}</span><span><b>{{ e.dates }}</b></span></div>
+    <div class="edu-line"><span>{{ e.institution }}</span><span>{% if e.score %}{{ e.score }}{% endif %}</span></div>
+    {% if e.coursework %}<div class="muted">Relevant Coursework: {{ e.coursework }}</div>{% endif %}
+  {% endfor %}
+  {% endif %}
+
+  {% if r.certifications %}
+  <h2 class="section">Certifications &amp; Professional Development</h2>
+  <ul>{% for c in r.certifications %}<li>{{ c }}</li>{% endfor %}</ul>
+  {% endif %}
+
+  {% if r.languages or r.target_roles %}
+  <h2 class="section">Additional Information</h2>
+  {% if r.languages %}<div><b>Languages:</b> {{ r.languages }}</div>{% endif %}
+  {% if r.target_roles %}<div><b>Target Roles:</b> {{ r.target_roles }}</div>{% endif %}
+  {% endif %}
+
+  <div class="footer">References and detailed project portfolio available upon request</div>
+
+</body>
+</html>

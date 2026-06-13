@@ -1,0 +1,18 @@
+# secrets — NEVER commit
+.env
+.dev.vars
+*.dev.vars
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+storage/*.json
+!storage/.gitkeep
+
+# node / cloudflare
+node_modules/
+.wrangler/
+dist/
+*.log

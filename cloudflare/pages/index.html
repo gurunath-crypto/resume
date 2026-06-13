@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DevOps / SRE CV Builder</title>
+<link rel="stylesheet" href="/styles.css">
+<!-- Cloudflare Turnstile (loads only if a sitekey is configured) -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">⚡ DevOps · SRE · AIOps — Resume Builder</div>
+  <div class="tagline">Intelligent, ATS-optimized resumes that win callbacks</div>
+</header>
+
+<main class="layout">
+  <!-- ------------------------- LEFT: INPUT FORM ------------------------- -->
+  <section class="panel form-panel">
+    <h2>1 · Your details</h2>
+    <div class="grid2">
+      <label>Full name*<input id="name" placeholder="Jane Doe"></label>
+      <label>Target role<select id="target_role"></select></label>
+      <label>Email<input id="email" placeholder="jane@email.com"></label>
+      <label>Phone<input id="phone" placeholder="+91 ..."></label>
+      <label>Location<input id="location" placeholder="Bengaluru, India"></label>
+      <label>Experience level<select id="experience_level"></select></label>
+      <label>LinkedIn<input id="linkedin" placeholder="linkedin.com/in/..."></label>
+      <label>GitHub<input id="github" placeholder="github.com/..."></label>
+    </div>
+
+    <h2>2 · Experience</h2>
+    <div id="experience-list"></div>
+    <button class="add" data-add="experience">+ Add experience</button>
+
+    <h2>3 · Projects <span class="hint">(great for freshers)</span></h2>
+    <div id="projects-list"></div>
+    <button class="add" data-add="projects">+ Add project</button>
+
+    <h2>4 · Education</h2>
+    <div id="education-list"></div>
+    <button class="add" data-add="education">+ Add education</button>
+
+    <h2>5 · Certifications <span class="hint">(one per line)</span></h2>
+    <textarea id="certifications" rows="3" placeholder="AWS Certified Solutions Architect – Associate&#10;Certified Kubernetes Administrator (CKA)"></textarea>
+
+    <h2>6 · Skills <span class="hint">(tap to select — AI adds smart adjacents)</span></h2>
+    <div id="skills-catalog" class="skills-catalog"></div>
+    <label>Other skills (comma separated)<input id="extra_skills" placeholder="KEDA, ArgoCD Image Updater, ..."></label>
+    <label>Languages<input id="languages" placeholder="English (Fluent), Hindi, Telugu"></label>
+
+    <div id="turnstile" class="cf-turnstile" style="margin-top:12px"></div>
+    <button id="generate" class="primary">✨ Build my resume</button>
+    <div id="form-msg" class="msg"></div>
+  </section>
+
+  <!-- ------------------------- RIGHT: PREVIEW + FEEDBACK ------------------------- -->
+  <section class="panel preview-panel">
+    <div class="preview-head">
+      <h2>Preview</h2>
+      <div id="dl-buttons" class="dl hidden">
+        <a id="dl-pdf" class="dl-btn">⬇ PDF</a>
+        <a id="dl-docx" class="dl-btn">⬇ Word</a>
+      </div>
+    </div>
+    <div id="verify" class="verify hidden"></div>
+    <iframe id="preview-frame" title="Resume preview"></iframe>
+    <div id="empty" class="empty">Fill the form and hit <b>Build my resume</b>. Your live preview appears here.</div>
+
+    <div id="feedback" class="feedback hidden">
+      <h2>7 · Refine</h2>
+      <p class="hint">Toggle skills to force-keep or force-remove, add a note, then rebuild. Each rebuild stays unique.</p>
+      <div id="feedback-skills" class="fb-skills"></div>
+      <textarea id="feedback-note" rows="2" placeholder="e.g. Emphasize AIOps and Kubernetes more; shorten the summary; add a GitOps project."></textarea>
+      <button id="rebuild" class="primary">♻ Rebuild with feedback</button>
+      <div id="rebuild-msg" class="msg"></div>
+    </div>
+  </section>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
