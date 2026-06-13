@@ -1,4 +1,4 @@
-// Prompt construction (ported from generator.py). Shared by generate + rebuild.
+// Prompt construction. Shared by generate + rebuild.
 
 import { ROLE_PRESETS, SKILLS_CATALOG } from "./skills";
 

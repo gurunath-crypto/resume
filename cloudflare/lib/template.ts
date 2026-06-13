@@ -1,5 +1,4 @@
-// Renders a resume object to standalone styled HTML (mirrors resume.html.j2).
-// Used for the live preview AND for browser "Save as PDF".
+// Renders a resume object to standalone styled HTML (preview + browser "Save as PDF").
 
 function esc(s: any): string {
   return String(s ?? "")

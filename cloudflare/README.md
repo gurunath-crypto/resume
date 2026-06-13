@@ -1,87 +1,77 @@
-# CV Builder — Cloudflare deployment (Worker API + Pages frontend)
+# CV Builder on Cloudflare — everything runs in the cloud, nothing local
 
-Public, remotely-accessible version. The API runs as a **Worker** (your Groq key lives
-there as a secret), and the UI is served by **Pages**. PDF export uses the browser's
-"Save as PDF"; Word export is generated in the Worker. Abuse is limited by **Turnstile**
-(invisible captcha) + a **per-IP rate limiter**.
+One **Cloudflare Pages** project serves the whole app: the static UI **and** the API
+(as **Pages Functions** under `/api/*`). No local Node, no wrangler CLI, no Python —
+you deploy entirely from the Cloudflare dashboard by connecting this GitHub repo.
 
 ```
 cloudflare/
-  worker/     TypeScript Worker (API)   -> deploy with wrangler
-  pages/      static site (UI)          -> deploy with Pages
+  wrangler.toml      Pages config (build output = public, nodejs_compat, vars)
+  package.json       declares the one dependency (docx) — Cloudflare installs it
+  public/            static UI (index.html, app.js, styles.css)
+  functions/api/     API endpoints, run on Cloudflare:
+                       catalog.ts  generate.ts  rebuild.ts  preview.ts  docx.ts
+  lib/               shared logic (LLM calls, prompt, template, docx, turnstile)
 ```
 
 ---
 
-## 1. Deploy the Worker (API)
+## Deploy (all in the browser)
 
-```powershell
-cd cloudflare\worker
-npm install
-npx wrangler login                      # opens browser to authorize
-npx wrangler secret put GROQ_API_KEY    # paste your Groq key when prompted
-npx wrangler deploy
-```
+### 1. Create the Pages project
+Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
+**Connect to Git** → pick the **`gurunath-crypto/resume`** repo.
 
-`wrangler deploy` prints your API URL, e.g.
-`https://cv-builder-api.<your-subdomain>.workers.dev`. **Copy it.**
+**Build settings:**
+| Field | Value |
+|---|---|
+| Project root directory | `cloudflare` |
+| Build command | `npm install` |
+| Build output directory | `public` |
 
-### Optional secrets
-```powershell
-npx wrangler secret put TURNSTILE_SECRET    # enables human verification (recommended)
-npx wrangler secret put ANTHROPIC_API_KEY   # adds Claude as primary/fallback
-```
+(The Functions in `functions/` and the `docx` dependency are bundled automatically.)
 
-### Turnstile (recommended, free)
-1. Cloudflare dashboard → **Turnstile** → *Add site* → get a **Site Key** + **Secret Key**.
-2. `npx wrangler secret put TURNSTILE_SECRET` (paste the Secret Key).
-3. Put the **Site Key** into `worker/wrangler.toml` under `[vars] TURNSTILE_SITEKEY`, then
-   `npx wrangler deploy` again. The widget then appears automatically in the UI.
+### 2. Add your Groq key (secret)
+Project → **Settings → Variables and Secrets** → **Add** →
+- Name: `GROQ_API_KEY`  Value: *your Groq key*  → **Encrypt** → Save.
 
-> The per-IP rate limiter (10 generations/min) is already configured in `wrangler.toml`.
+> Optional: add `ANTHROPIC_API_KEY` too (Claude becomes primary, Groq the fallback).
+
+### 3. Deploy
+Hit **Save and Deploy**. You get a public URL like `https://cv-builder.pages.dev`.
+Open it — students anywhere can build resumes, each unique, with PDF + Word download.
 
 ---
 
-## 2. Point the frontend at your Worker
+## Recommended before going fully public: protect your Groq key
 
-Edit **one line** in `cloudflare/pages/app.js`:
-```js
-const API_BASE = window.CV_API_BASE || "https://cv-builder-api.YOUR-SUBDOMAIN.workers.dev";
-```
-Replace with the URL `wrangler deploy` gave you.
+### Turnstile (invisible captcha) — free
+1. Dashboard → **Turnstile** → **Add site** → copy the **Site Key** + **Secret Key**.
+2. Pages → Settings → Variables → add secret `TURNSTILE_SECRET` = *Secret Key* (Encrypt).
+3. Edit `cloudflare/wrangler.toml` → set `TURNSTILE_SITEKEY = "your-site-key"` → commit/push.
+   Cloudflare auto-redeploys; the verification widget then appears in the UI and the
+   API rejects requests without a valid token.
 
----
+### Per-IP rate limiting — free, no code
+Dashboard → your domain/zone → **Security → WAF → Rate limiting rules** → create a rule:
+- When URI path contains `/api/generate` → more than `10` requests per `1 min` per IP → **Block**.
 
-## 3. Deploy the Pages site (UI)
-
-**Option A — dashboard (Git):** Cloudflare dashboard → **Workers & Pages** → *Create* →
-**Pages** → *Connect to Git* → pick the `suryakusumuru/resume` repo. Build settings:
-- Framework preset: **None**
-- Build command: *(empty)*
-- Build output directory: **`cloudflare/pages`**
-
-**Option B — CLI:**
-```powershell
-cd cloudflare\pages
-npx wrangler pages deploy . --project-name cv-builder
-```
-
-Open the Pages URL (e.g. `https://cv-builder.pages.dev`) — done. Students worldwide can
-use it; every resume is unique, with PDF + Word download.
+(WAF rate-limiting rules apply to `*.pages.dev` via the dashboard once the project has a
+custom domain, or use Turnstile alone on the default `pages.dev` domain.)
 
 ---
 
-## Local dev
-```powershell
-cd cloudflare\worker
-npm install
-echo "GROQ_API_KEY=gsk_..." > .dev.vars      # local-only secret (gitignored)
-npx wrangler dev                              # API at http://localhost:8787
-```
-Set `API_BASE = "http://localhost:8787"` in `app.js` and open `pages/index.html`
-(or serve it with any static server) to test end-to-end.
+## How it works
+- **Same-origin:** the UI calls `/api/...` on its own domain — no CORS, no API URL to edit.
+- **Stateless:** the browser holds the resume JSON; downloads POST it back. No database.
+- **PDF:** the ⬇ PDF button prints the styled preview → "Save as PDF" (pixel-identical,
+  free, runs in the visitor's browser).
+- **Word:** generated on Cloudflare with the pure-JS `docx` library.
+- **Uniqueness:** temperature 0.9 + per-student seed; a content fingerprint is shown.
 
-## Cost
-- Workers + Pages: free tier is plenty for student volume.
-- Groq: your key. Free tier is rate-limited (the Worker auto-retries on 429); a paid
-  Groq tier removes the wait under heavy load.
+## Changing config later
+Edit files in this repo and push — Cloudflare rebuilds automatically. Change the model
+via `GROQ_MODEL` in `wrangler.toml`, or rotate keys in the dashboard.
+
+> The Python app in the repo root (`backend/`, `frontend/`) is the optional local version.
+> For the cloud deployment you only need this `cloudflare/` folder.

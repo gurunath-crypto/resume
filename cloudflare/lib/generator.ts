@@ -1,18 +1,7 @@
 // LLM completion via fetch. Primary = Claude, fallback = Groq (or set CV_PROVIDER=groq).
 
+import { Env } from "./env";
 import { SYSTEM_PROMPT, buildRebuildMessage, buildUserMessage } from "./prompt";
-
-export interface Env {
-  GROQ_API_KEY?: string;
-  ANTHROPIC_API_KEY?: string;
-  CV_PROVIDER?: string;
-  CV_MODEL?: string;
-  GROQ_MODEL?: string;
-  CV_MAX_TOKENS?: string;
-  TURNSTILE_SECRET?: string;
-  TURNSTILE_SITEKEY?: string;
-  RATE_LIMITER?: { limit: (opts: { key: string }) => Promise<{ success: boolean }> };
-}
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
@@ -26,7 +15,7 @@ function providers(env: Env): string[] {
   const order = pref === "groq" ? ["groq", "claude"] : ["claude", "groq"];
   const usable = order.filter((p) => available[p]);
   if (usable.length === 0) {
-    throw new Error("No API key configured. Set GROQ_API_KEY or ANTHROPIC_API_KEY as a Worker secret.");
+    throw new Error("No API key configured. Set GROQ_API_KEY (or ANTHROPIC_API_KEY) in the Pages dashboard.");
   }
   return usable;
 }
@@ -117,7 +106,6 @@ export async function rebuildResume(env: Env, req: any): Promise<any> {
   return complete(env, SYSTEM_PROMPT, buildRebuildMessage(req), 0.85);
 }
 
-// Stable short fingerprint of the resume prose (uniqueness indicator).
 export async function fingerprint(resume: any): Promise<string> {
   const blob =
     (resume.summary || "") +

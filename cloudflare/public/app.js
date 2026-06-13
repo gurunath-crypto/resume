@@ -1,9 +1,5 @@
-// ============================================================================
-//  CONFIG — after you deploy the Worker, put its URL here (no trailing slash).
-//  Example: "https://cv-builder-api.your-subdomain.workers.dev"
-//  Leave "" only if the API is served on the same origin.
-const API_BASE = window.CV_API_BASE || "https://cv-builder-api.YOUR-SUBDOMAIN.workers.dev";
-// ============================================================================
+// Same-origin: the Pages Functions API is served under /api on this very domain.
+const API_BASE = "";
 
 let CATALOG = { skills: {}, roles: [], levels: [], turnstile_sitekey: "" };
 let CURRENT = { resume: null, student: null };
@@ -112,8 +108,7 @@ async function api(path, body) {
 
 async function refreshPreview() {
   const r = await api("/api/preview", { resume: CURRENT.resume });
-  const html = await r.text();
-  $("preview-frame").srcdoc = html;
+  $("preview-frame").srcdoc = await r.text();
 }
 
 function showResult(data) {
@@ -189,7 +184,7 @@ async function rebuild() {
   finally { btn.disabled = false; btn.textContent = old; resetTurnstile(); }
 }
 
-// PDF = print the styled preview (Chrome's "Save as PDF" = identical fidelity, free).
+// PDF = print the styled preview (browser "Save as PDF" = identical fidelity, free).
 function downloadPdf() {
   const frame = $("preview-frame");
   if (!frame.srcdoc) return;
@@ -210,10 +205,9 @@ async function downloadDocx() {
 
 async function init() {
   try {
-    const r = await fetch(API_BASE + "/api/catalog");
-    CATALOG = await r.json();
+    CATALOG = await (await fetch(API_BASE + "/api/catalog")).json();
   } catch (e) {
-    msg("form-msg", "Cannot reach API at " + API_BASE + " — set the Worker URL in app.js (API_BASE).", "err");
+    msg("form-msg", "Cannot reach the API. If this persists, the Pages Functions may still be deploying.", "err");
     CATALOG = { skills: {}, roles: ["DevOps Engineer"], levels: ["Mid / 2-4 yrs"], turnstile_sitekey: "" };
   }
   CATALOG.roles.forEach((role) => { const o = document.createElement("option"); o.value = o.textContent = role; $("target_role").appendChild(o); });
@@ -227,7 +221,6 @@ async function init() {
   $("dl-pdf").onclick = downloadPdf;
   $("dl-docx").onclick = downloadDocx;
 
-  // Render Turnstile widget if configured
   if (CATALOG.turnstile_sitekey) {
     const tryRender = () => {
       if (window.turnstile) turnstileId = window.turnstile.render("#turnstile", { sitekey: CATALOG.turnstile_sitekey });

@@ -1,0 +1,12 @@
+{
+  "name": "cv-builder-pages",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "docx": "^8.5.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,4 +1,4 @@
-// Clean, ATS-friendly .docx built with the pure-JS `docx` library (runs in Workers).
+// Clean, ATS-friendly .docx built with the pure-JS `docx` library (runs on Workers).
 
 import {
   AlignmentType, BorderStyle, Document, Packer, Paragraph, TextRun,

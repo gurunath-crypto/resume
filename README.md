@@ -1,9 +1,14 @@
 # DevOps / SRE / AIOps — Intelligent CV Builder
 
-A local web tool that turns a student's raw details into a **premium, ATS-optimized,
-callback-winning resume** in the same ultra-dense style as the proven reference CV —
-then exports **PDF and Word**. Every resume is **uniquely generated** (no duplicates,
-even for students with identical skill sets), and you can **refine with feedback**.
+Turns a student's raw details into a **premium, ATS-optimized, callback-winning resume**
+in the same ultra-dense style as the proven reference CV — then exports **PDF and Word**.
+Every resume is **uniquely generated** (no duplicates, even for students with identical
+skill sets), and you can **refine with feedback**.
+
+> **☁ Deploy to the cloud (recommended):** see **[`cloudflare/README.md`](cloudflare/README.md)**.
+> One Cloudflare Pages project runs the entire app (UI + API) — nothing runs on your machine,
+> deployed straight from this repo via the dashboard. The `backend/` + `frontend/` below are
+> the optional local Python version.
 
 Built for the Indian + global DevOps/SRE market, with **AIOps** keywords injected
 where credible.

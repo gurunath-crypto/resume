@@ -1,4 +1,4 @@
-// DevOps / SRE / AIOps skill taxonomy + role presets (ported from skills_catalog.py).
+// DevOps / SRE / AIOps skill taxonomy + role presets.
 
 export const SKILLS_CATALOG: Record<string, string[]> = {
   "Cloud Platforms": ["AWS", "Azure", "GCP", "OCI", "EKS", "AKS", "GKE", "EC2", "Lambda",

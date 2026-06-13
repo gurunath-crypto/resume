@@ -1,0 +1,11 @@
+name = "cv-builder"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "public"
+
+# Public (non-secret) config. Secrets (GROQ_API_KEY, TURNSTILE_SECRET,
+# ANTHROPIC_API_KEY) are added in the Pages dashboard, NOT here.
+[vars]
+CV_PROVIDER = "groq"
+GROQ_MODEL = "llama-3.3-70b-versatile"
+TURNSTILE_SITEKEY = ""   # paste your Turnstile site key here, then redeploy
